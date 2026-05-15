@@ -1,0 +1,67 @@
+name: Bug report
+description: Report a reproducible problem in DDNS+
+title: "Bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Do not include real API tokens, private domains, or sensitive logs.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: DDNS+ version, commit, or Docker image tag.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened?
+      placeholder: "The Cloudflare record is not updated after the scheduler runs."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the exact steps needed to reproduce the issue.
+      placeholder: |
+        1. Add provider Example DNS
+        2. Add domain example.com
+        3. Add record home.example.com
+        4. Wait for the scheduler
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: "The DNS record should be updated to the detected public IP."
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Paste relevant logs with secrets removed.
+      render: text
+  - type: dropdown
+    id: provider
+    attributes:
+      label: DNS provider
+      options:
+        - Hetzner Cloud DNS
+        - Cloudflare DNS
+        - Other
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: |
+        OS:
+        Node.js:
+        Docker:
+        Browser:

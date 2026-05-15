@@ -1,0 +1,16 @@
+{
+  "nav.dashboard": "Dashboard",
+  "nav.records": "Records",
+  "nav.domains": "Domains",
+  "nav.providers": "Providers",
+  "nav.settings": "Settings",
+  "nav.logs": "Logs",
+  "common.logout": "Logout",
+  "common.loggedInAs": "Signed in as {name}",
+  "settings.title": "Settings",
+  "settings.eyebrow": "Updater automation",
+  "settings.language": "Language",
+  "settings.german": "German",
+  "settings.english": "English",
+  "settings.save": "Save settings"
+}

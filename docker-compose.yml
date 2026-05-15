@@ -1,0 +1,21 @@
+services:
+  ddns-plus:
+    build: .
+    container_name: ddns-plus
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: file:/app/data/ddns-plus.db
+      SESSION_SECRET: replace-this-with-a-long-random-secret
+      PORT: "${PORT:-3000}"
+    volumes:
+      - ddns-plus-data:/app/data
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:$${PORT:-3000}/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  ddns-plus-data:

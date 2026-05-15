@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model DnsProvider {
+  id        String       @id @default(cuid())
+  name      String
+  type      ProviderType @default(HETZNER_CLOUD)
+  apiToken  String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  records   DdnsRecord[]
+  zones     DnsZone[]
+}
+
+model DnsZone {
+  id         String       @id @default(cuid())
+  name       String
+  zoneId     String
+  providerId String
+  provider   DnsProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  records    DdnsRecord[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@unique([providerId, name])
+}
+
+model DdnsRecord {
+  id            String       @id @default(cuid())
+  hostname      String
+  zoneId        String
+  recordName    String
+  recordType    RecordType
+  ttl           Int          @default(300)
+  enabled       Boolean      @default(true)
+  providerId    String
+  provider      DnsProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  zoneRefId     String?
+  zoneRef       DnsZone?     @relation(fields: [zoneRefId], references: [id], onDelete: SetNull)
+  lastIp        String?
+  lastStatus    UpdateStatus @default(PENDING)
+  lastMessage   String?
+  lastCheckedAt DateTime?
+  lastChangedAt DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  logs          UpdateLog[]
+}
+
+model UpdateLog {
+  id        String       @id @default(cuid())
+  recordId  String?
+  record    DdnsRecord? @relation(fields: [recordId], references: [id], onDelete: SetNull)
+  level     LogLevel
+  message   String
+  ip        String?
+  createdAt DateTime     @default(now())
+}
+
+model AppSettings {
+  id                  String   @id @default("default")
+  language            String   @default("de")
+  updatePeriodSeconds Int      @default(300)
+  cooldownSeconds     Int      @default(300)
+  httpTimeoutSeconds  Int      @default(10)
+  ipv4Provider        IpProvider @default(IPIFY)
+  ipv6Provider        IpProvider @default(IPIFY)
+  lastPublicIpv4      String?
+  lastPublicIpv4Error String?
+  lastPublicIpv4At    DateTime?
+  lastPublicIpv6      String?
+  lastPublicIpv6Error String?
+  lastPublicIpv6At    DateTime?
+  lastUpdateStartedAt DateTime?
+  lastUpdateFinishedAt DateTime?
+  lastUpdateStatus    String?
+  lastUpdateMessage   String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+enum ProviderType {
+  HETZNER_CLOUD
+  CLOUDFLARE
+}
+
+enum RecordType {
+  A
+  AAAA
+}
+
+enum UpdateStatus {
+  PENDING
+  OK
+  CHANGED
+  ERROR
+  SKIPPED
+}
+
+enum LogLevel {
+  INFO
+  WARN
+  ERROR
+}
+
+enum IpProvider {
+  IPIFY
+  ICANHAZIP
+  IDENT
+  SEEIP
+}
