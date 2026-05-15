@@ -11,6 +11,13 @@ Provider adapters are intentionally small. A new provider only needs to expose m
 - `lib/providers/registry.ts`: registered provider adapters
 - `lib/providers/hetzner-cloud.ts`: Hetzner Cloud DNS adapter
 - `lib/providers/cloudflare.ts`: Cloudflare DNS adapter
+- `lib/providers/powerdns.ts`: PowerDNS adapter
+- `lib/providers/desec.ts`: deSEC adapter
+- `lib/providers/digitalocean.ts`: DigitalOcean DNS adapter
+- `lib/providers/porkbun.ts`: Porkbun DNS adapter
+- `lib/providers/duckdns.ts`: DuckDNS adapter
+- `lib/providers/route53.ts`: Amazon Route 53 adapter
+- `lib/providers/namecheap.ts`: Namecheap DNS adapter
 
 ## Add a Provider
 
@@ -101,3 +108,27 @@ Record name: home
 Zone ID: 00000000000000000000000000000000
 API token: example-api-token
 ```
+
+## Existing Provider Notes
+
+Some providers use a single API token string, while others need multiple credential fields. DDNS+ stores provider credentials in one encrypted-at-rest-ready text field today, so multi-field providers use JSON in the token field.
+
+Examples:
+
+```json
+{"apiUrl":"https://pdns.example.com/api/v1","apiKey":"replace-this-secret","serverId":"localhost"}
+```
+
+```json
+{"apikey":"pk1_replace_this","secretapikey":"sk1_replace_this"}
+```
+
+```json
+{"accessKeyId":"AKIA_REPLACE_THIS","secretAccessKey":"replace-this-secret"}
+```
+
+```json
+{"apiUser":"example-user","apiKey":"replace-this-key","clientIp":"203.0.113.10"}
+```
+
+Provider adapters should not log full credential values.

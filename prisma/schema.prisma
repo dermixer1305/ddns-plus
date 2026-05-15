@@ -97,6 +97,13 @@ model AppSettings {
 enum ProviderType {
   HETZNER_CLOUD
   CLOUDFLARE
+  POWERDNS
+  DESEC
+  DIGITALOCEAN
+  PORKBUN
+  DUCKDNS
+  ROUTE53
+  NAMECHEAP
 }
 
 enum RecordType {

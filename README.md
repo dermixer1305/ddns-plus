@@ -19,6 +19,13 @@ It is designed for homelab and small self-hosted environments where DNS records 
 - Modular provider adapter system
 - Hetzner Cloud DNS support
 - Cloudflare DNS support
+- PowerDNS support
+- deSEC support
+- DigitalOcean DNS support
+- Porkbun DNS support
+- DuckDNS support
+- Amazon Route 53 support
+- Namecheap DNS support
 - SQLite via Prisma
 - Docker and Docker Compose support
 - Responsive dark UI
@@ -157,6 +164,40 @@ TTL: 300
 ```
 
 If the Cloudflare DNS record does not exist, DDNS+ creates it automatically. New Cloudflare records are created with `proxied: false` so DDNS manages the real DNS target IP.
+
+## Additional DNS Providers
+
+DDNS+ also supports these providers:
+
+| Provider | Token field value | Zone value | Record value |
+| --- | --- | --- | --- |
+| PowerDNS | JSON credentials | Zone ID, usually `example.com.` | Relative name such as `home` or `@` |
+| deSEC | API token | Domain such as `example.com` | Subname such as `home` or `@` |
+| DigitalOcean DNS | Personal access token | Domain such as `example.com` | Relative name such as `home` or `@` |
+| Porkbun DNS | JSON credentials | Domain such as `example.com` | Subdomain such as `home` or empty/root |
+| DuckDNS | DuckDNS token | `duckdns.org` | DuckDNS subdomain such as `home` |
+| Amazon Route 53 | JSON credentials | Hosted Zone ID such as `Z1234567890ABC` | Full hostname such as `home.example.com` |
+| Namecheap DNS | JSON credentials | Domain such as `example.com` | Host name such as `home` or `@` |
+
+JSON credential examples:
+
+```json
+{"apiUrl":"https://pdns.example.com/api/v1","apiKey":"replace-this-secret","serverId":"localhost"}
+```
+
+```json
+{"apikey":"pk1_replace_this","secretapikey":"sk1_replace_this"}
+```
+
+```json
+{"accessKeyId":"AKIA_REPLACE_THIS","secretAccessKey":"replace-this-secret"}
+```
+
+```json
+{"apiUser":"example-user","apiKey":"replace-this-key","clientIp":"203.0.113.10"}
+```
+
+For Namecheap, add `"sandbox": true` to use the sandbox API.
 
 ## Update Settings
 
