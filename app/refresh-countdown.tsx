@@ -13,7 +13,7 @@ type SchedulerStatus = {
 };
 
 function formatCountdown(milliseconds: number) {
-  if (milliseconds <= 0) return "wartet...";
+  if (milliseconds <= 0) return null;
 
   const totalSeconds = Math.ceil(milliseconds / 1000);
   const minutes = Math.floor(totalSeconds / 60);
@@ -28,11 +28,20 @@ export function RefreshCountdown({
   intervalSeconds,
   lastUpdateFinishedAt,
   lastUpdateStatus,
+  texts,
 }: {
   nextRefreshAt: string | null;
   intervalSeconds: number;
   lastUpdateFinishedAt?: string | null;
   lastUpdateStatus?: string | null;
+  texts: {
+    noActiveRecords: string;
+    automaticCheck: string;
+    running: string;
+    waiting: string;
+    ariaUntil: string;
+    ariaRunning: string;
+  };
 }) {
   const router = useRouter();
   const [knownFinishedAt, setKnownFinishedAt] = useState(lastUpdateFinishedAt || null);
@@ -103,7 +112,7 @@ export function RefreshCountdown({
   if (!targetTime) {
     return (
       <div className="countdown-card">
-        <p>Keine aktiven Records</p>
+        <p>{texts.noActiveRecords}</p>
         <div className="countdown-track">
           <div className="countdown-bar empty" />
         </div>
@@ -115,10 +124,10 @@ export function RefreshCountdown({
     return (
       <div className="countdown-card">
         <div className="countdown-head">
-          <span>Automatischer Check</span>
+          <span>{texts.automaticCheck}</span>
           <strong>...</strong>
         </div>
-        <div className="countdown-track" aria-label="Zeit bis zum nächsten automatischen Check">
+        <div className="countdown-track" aria-label={texts.ariaUntil}>
           <div className="countdown-bar" style={{ width: "100%" }} />
         </div>
       </div>
@@ -129,10 +138,10 @@ export function RefreshCountdown({
     return (
       <div className="countdown-card">
         <div className="countdown-head">
-          <span>Automatischer Check</span>
-          <strong>läuft...</strong>
+          <span>{texts.automaticCheck}</span>
+          <strong>{texts.running}</strong>
         </div>
-        <div className="countdown-track" aria-label="Automatischer Check läuft">
+        <div className="countdown-track" aria-label={texts.ariaRunning}>
           <div className="countdown-bar running" />
         </div>
       </div>
@@ -146,10 +155,10 @@ export function RefreshCountdown({
   return (
     <div className="countdown-card">
       <div className="countdown-head">
-        <span>Automatischer Check</span>
-        <strong>{formatCountdown(remaining)}</strong>
+        <span>{texts.automaticCheck}</span>
+        <strong>{formatCountdown(remaining) || texts.waiting}</strong>
       </div>
-      <div className="countdown-track" aria-label="Zeit bis zum nächsten automatischen Check">
+      <div className="countdown-track" aria-label={texts.ariaUntil}>
         <div className={`countdown-bar ${remaining <= 0 ? "overdue" : ""}`} style={{ width: `${progress}%` }} />
       </div>
     </div>

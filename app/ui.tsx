@@ -1,40 +1,47 @@
 import { loginAction, setupAction } from "@/app/actions";
+import { TranslationKey } from "@/lib/i18n";
 
-export function formatDate(date?: Date | null) {
-  if (!date) return "Noch nie";
-  return new Intl.DateTimeFormat("de-DE", {
+type TFunction = (key: TranslationKey, replacements?: Record<string, string | number>) => string;
+
+export function formatDate(date?: Date | null, locale = "de") {
+  if (!date) return "";
+  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "de-DE", {
     dateStyle: "short",
     timeStyle: "medium",
   }).format(date);
 }
 
-export function formatRelativeTime(date?: Date | null) {
-  if (!date) return "Unbekannt";
-
-  const seconds = Math.ceil((date.getTime() - Date.now()) / 1000);
-  if (seconds <= 0) return "jetzt fällig";
-
-  const minutes = Math.ceil(seconds / 60);
-  if (minutes < 60) return `in ${minutes} Min.`;
-
-  const hours = Math.ceil(minutes / 60);
-  if (hours < 24) return `in ${hours} Std.`;
-
-  return `in ${Math.ceil(hours / 24)} Tagen`;
+export function formatDateOrNever(date: Date | null | undefined, t: TFunction, locale: string) {
+  return date ? formatDate(date, locale) : t("common.never");
 }
 
-export function formatDueTime(date?: Date | null) {
-  if (!date) return "keine aktiven Records";
+export function formatRelativeTime(date: Date | null | undefined, t: TFunction) {
+  if (!date) return t("common.unknown");
+
+  const seconds = Math.ceil((date.getTime() - Date.now()) / 1000);
+  if (seconds <= 0) return t("common.nowDue");
+
+  const minutes = Math.ceil(seconds / 60);
+  if (minutes < 60) return t("common.inMinutes", { count: minutes });
+
+  const hours = Math.ceil(minutes / 60);
+  if (hours < 24) return t("common.inHours", { count: hours });
+
+  return t("common.inDays", { count: Math.ceil(hours / 24) });
+}
+
+export function formatDueTime(date: Date | null | undefined, t: TFunction, locale: string) {
+  if (!date) return t("common.noActiveRecords");
 
   const secondsOverdue = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (secondsOverdue < 0) return `${formatDate(date)} (${formatRelativeTime(date)})`;
-  if (secondsOverdue < 60) return "jetzt fällig";
+  if (secondsOverdue < 0) return `${formatDate(date, locale)} (${formatRelativeTime(date, t)})`;
+  if (secondsOverdue < 60) return t("common.nowDue");
 
   const minutes = Math.floor(secondsOverdue / 60);
-  if (minutes < 60) return `überfällig seit ${minutes} Min.`;
+  if (minutes < 60) return t("common.overdueMinutes", { count: minutes });
 
   const hours = Math.floor(minutes / 60);
-  return `überfällig seit ${hours} Std.`;
+  return t("common.overdueHours", { count: hours });
 }
 
 export function getNextRefresh(records: Array<{ enabled: boolean; lastCheckedAt: Date | null }>, seconds: number) {
@@ -115,29 +122,26 @@ export function SelectInput({
   );
 }
 
-export function AuthShell({ mode }: { mode: "setup" | "login" }) {
+export function AuthShell({ mode, t }: { mode: "setup" | "login"; t: TFunction }) {
   const isSetup = mode === "setup";
 
   return (
     <main className="auth-shell">
       <section className="auth-brand">
         <div className="logo-mark">D+</div>
-        <p className="eyebrow">Selfhosted Dynamic DNS</p>
+        <p className="eyebrow">{t("auth.eyebrow")}</p>
         <h1>DDNS+</h1>
-        <p>
-          Schlanke Verwaltung für DNS-Provider, automatische IP-Erkennung, Update-Status und Logs in einer lokalen
-          Weboberfläche.
-        </p>
+        <p>{t("auth.description")}</p>
       </section>
 
       <section className="panel auth-panel">
-        <p className="eyebrow">{isSetup ? "Ersteinrichtung" : "Anmelden"}</p>
-        <h2>{isSetup ? "Admin-Konto erstellen" : "Willkommen zurück"}</h2>
+        <p className="eyebrow">{isSetup ? t("auth.setupEyebrow") : t("auth.loginEyebrow")}</p>
+        <h2>{isSetup ? t("auth.setupTitle") : t("auth.loginTitle")}</h2>
         <form action={isSetup ? setupAction : loginAction} className="stack">
-          <TextInput name="username" label="Benutzername" placeholder="admin" required />
-          <TextInput name="password" label="Passwort" type="password" required />
+          <TextInput name="username" label={t("auth.username")} placeholder="admin" required />
+          <TextInput name="password" label={t("auth.password")} type="password" required />
           <button className="primary-button" type="submit">
-            {isSetup ? "DDNS+ einrichten" : "Einloggen"}
+            {isSetup ? t("auth.setupButton") : t("auth.loginButton")}
           </button>
         </form>
       </section>

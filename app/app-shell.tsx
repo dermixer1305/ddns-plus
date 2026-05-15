@@ -34,7 +34,7 @@ export async function AppShell({
           <div className="logo-mark compact">D+</div>
           <div>
             <p className="text-lg font-semibold">DDNS+</p>
-            <p className="text-xs text-zinc-500">Homelab DNS Control</p>
+            <p className="text-xs text-zinc-500">{t("common.productSubtitle")}</p>
           </div>
         </div>
         <nav className="mt-10 grid gap-2 text-sm text-zinc-300">

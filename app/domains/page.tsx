@@ -1,43 +1,47 @@
 import { deleteZoneAction, saveZoneAction } from "@/app/actions";
 import { AppShell } from "@/app/app-shell";
 import { TextInput } from "@/app/ui";
+import { createTranslator } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
+import { getSettings } from "@/lib/settings";
 
 export default async function DomainsPage() {
-  const [providers, zones] = await Promise.all([
+  const [providers, zones, settings] = await Promise.all([
     prisma.dnsProvider.findMany({ orderBy: { createdAt: "asc" } }),
     prisma.dnsZone.findMany({ include: { provider: true, records: true }, orderBy: [{ name: "asc" }] }),
+    getSettings(),
   ]);
+  const t = createTranslator(settings.language);
 
   return (
-    <AppShell active="/domains" title="Domains" eyebrow="Provider-Domains und Zone IDs">
+    <AppShell active="/domains" title={t("domains.title")} eyebrow={t("domains.eyebrow")}>
       <section className="content-grid">
         <div className="panel p-5">
-          <p className="eyebrow">Neue Domain</p>
-          <h2>Domain mit Provider koppeln</h2>
+          <p className="eyebrow">{t("domains.newEyebrow")}</p>
+          <h2>{t("domains.createTitle")}</h2>
           <form action={saveZoneAction} className="form-grid mt-5">
             <label className="field">
-              <span>Provider</span>
+              <span>{t("common.provider")}</span>
               <select name="providerId" required disabled={providers.length === 0}>
-                <option value="">{providers.length === 0 ? "Zuerst Provider anlegen" : "Provider wählen"}</option>
+                <option value="">{providers.length === 0 ? t("records.createProviderFirst") : t("domains.chooseProvider")}</option>
                 {providers.map((provider) => (
                   <option key={provider.id} value={provider.id}>{provider.name} ({provider.type})</option>
                 ))}
               </select>
             </label>
-            <TextInput name="name" label="Domain" placeholder="example.com" required />
-            <TextInput name="zoneId" label="Zone ID oder Name" placeholder="Cloudflare Zone ID oder Hetzner Zone" required />
-            <button className="secondary-button" type="submit" disabled={providers.length === 0}>Domain speichern</button>
+            <TextInput name="name" label={t("common.domain")} placeholder="example.com" required />
+            <TextInput name="zoneId" label={t("domains.zoneId")} placeholder={t("domains.zoneIdPlaceholder")} required />
+            <button className="secondary-button" type="submit" disabled={providers.length === 0}>{t("domains.save")}</button>
           </form>
-          <p className="hint-text">Ein Provider kann beliebig viele Domains/Zonen haben.</p>
+          <p className="hint-text">{t("domains.hint")}</p>
         </div>
 
         <div className="panel p-5">
-          <p className="eyebrow">Domains</p>
-          <h2>Gespeicherte Zonen</h2>
+          <p className="eyebrow">{t("domains.listEyebrow")}</p>
+          <h2>{t("domains.savedZones")}</h2>
           <div className="mini-list">
             {zones.length === 0 ? (
-              <p className="empty-state">Noch keine Domain gespeichert.</p>
+              <p className="empty-state">{t("domains.empty")}</p>
             ) : zones.map((zone) => (
               <div className="mini-row" key={zone.id}>
                 <div>
@@ -46,26 +50,26 @@ export default async function DomainsPage() {
                     {zone.provider.name} · {zone.zoneId} · {zone.records.length} Records
                   </p>
                   <details className="edit-details compact-edit">
-                    <summary>Bearbeiten</summary>
+                    <summary>{t("common.edit")}</summary>
                     <form action={saveZoneAction} className="stack mt-3">
                       <input type="hidden" name="id" value={zone.id} />
                       <label className="field">
-                        <span>Provider</span>
+                        <span>{t("common.provider")}</span>
                         <select name="providerId" defaultValue={zone.providerId} required>
                           {providers.map((provider) => (
                             <option key={provider.id} value={provider.id}>{provider.name} ({provider.type})</option>
                           ))}
                         </select>
                       </label>
-                      <TextInput name="name" label="Domain" defaultValue={zone.name} required />
-                      <TextInput name="zoneId" label="Zone ID oder Name" defaultValue={zone.zoneId} required />
-                      <button className="secondary-button" type="submit">Speichern</button>
+                      <TextInput name="name" label={t("common.domain")} defaultValue={zone.name} required />
+                      <TextInput name="zoneId" label={t("domains.zoneId")} defaultValue={zone.zoneId} required />
+                      <button className="secondary-button" type="submit">{t("common.save")}</button>
                     </form>
                   </details>
                 </div>
                 <form action={deleteZoneAction}>
                   <input type="hidden" name="id" value={zone.id} />
-                  <button className="danger-button small" type="submit">Löschen</button>
+                  <button className="danger-button small" type="submit">{t("common.delete")}</button>
                 </form>
               </div>
             ))}

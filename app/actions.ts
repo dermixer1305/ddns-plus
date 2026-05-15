@@ -6,7 +6,7 @@ import { IpProvider, ProviderType, RecordType } from "@prisma/client";
 import { createSession, destroySession, getCurrentUser, hashPassword, verifyPassword } from "@/lib/auth";
 import { runDdnsUpdate } from "@/lib/ddns";
 import { prisma } from "@/lib/prisma";
-import { parseLocale } from "@/lib/i18n";
+import { getTranslator, parseLocale } from "@/lib/i18n";
 import { getProviderAdapter, listProviderAdapters } from "@/lib/providers/registry";
 
 function getString(formData: FormData, key: string) {
@@ -15,7 +15,10 @@ function getString(formData: FormData, key: string) {
 
 async function assertAuthenticated() {
   const user = await getCurrentUser();
-  if (!user) throw new Error("Nicht angemeldet");
+  if (!user) {
+    const t = await getTranslator();
+    throw new Error(t("error.notAuthenticated"));
+  }
   return user;
 }
 
@@ -27,7 +30,8 @@ export async function setupAction(formData: FormData) {
   const password = getString(formData, "password");
 
   if (!username || password.length < 10) {
-    throw new Error("Benutzername und Passwort mit mindestens 10 Zeichen sind erforderlich");
+    const t = await getTranslator();
+    throw new Error(t("error.setupCredentials"));
   }
 
   const user = await prisma.user.create({
@@ -44,7 +48,8 @@ export async function loginAction(formData: FormData) {
   const user = await prisma.user.findUnique({ where: { username } });
 
   if (!user || !verifyPassword(password, user.passwordHash)) {
-    throw new Error("Login fehlgeschlagen");
+    const t = await getTranslator();
+    throw new Error(t("error.loginFailed"));
   }
 
   await createSession(user.id);
@@ -66,7 +71,10 @@ export async function saveProviderAction(formData: FormData) {
   const name = getString(formData, "name") || adapter.defaultName;
   const apiToken = getString(formData, "apiToken");
 
-  if (!apiToken && !existingProvider) throw new Error("API Token ist erforderlich");
+  if (!apiToken && !existingProvider) {
+    const t = await getTranslator();
+    throw new Error(t("error.apiTokenRequired"));
+  }
 
   if (existingProvider) {
     await prisma.dnsProvider.update({
@@ -98,7 +106,8 @@ export async function saveZoneAction(formData: FormData) {
   const providerId = getString(formData, "providerId");
 
   if (!name || !zoneId || !providerId) {
-    throw new Error("Domain, Zone ID und Provider sind erforderlich");
+    const t = await getTranslator();
+    throw new Error(t("error.zoneRequired"));
   }
 
   if (id) {
@@ -137,10 +146,11 @@ export async function saveRecordAction(formData: FormData) {
   const enabled = formData.get("enabled") === "on";
 
   if (!hostname || !recordName || !zoneId || !providerId) {
+    const t = await getTranslator();
     throw new Error(
       zoneRef
-        ? "Hostname und RRSet Name sind erforderlich"
-        : "Hostname, Zone, RRSet Name und Provider sind erforderlich",
+        ? t("error.recordRequiredWithStoredZone")
+        : t("error.recordRequiredManual"),
     );
   }
 

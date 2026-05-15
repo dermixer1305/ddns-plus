@@ -1,5 +1,6 @@
 import { IpProvider, RecordType } from "@prisma/client";
 import { describeFetchError } from "@/lib/http";
+import { createTranslator } from "@/lib/i18n";
 import { RuntimeSettings } from "@/lib/settings";
 import { timeoutSignal } from "@/lib/http";
 
@@ -22,6 +23,7 @@ function isIpForType(type: RecordType, value: string) {
 }
 
 export async function detectPublicIp(type: RecordType, settings: RuntimeSettings) {
+  const t = createTranslator(settings.language);
   const provider = type === "A" ? settings.ipv4Provider : settings.ipv6Provider;
   const providerUrls = type === "A" ? ipv4ProviderUrls : ipv6ProviderUrls;
   const fallbackProviders = [
@@ -38,17 +40,18 @@ export async function detectPublicIp(type: RecordType, settings: RuntimeSettings
     }
   }
 
-  throw new Error(`IP-Erkennung fehlgeschlagen: ${errors.join(" | ")}`);
+  throw new Error(t("ddns.publicIpDetectionFailed", { errors: errors.join(" | ") }));
 }
 
 export async function getPublicIpOverview(settings: RuntimeSettings) {
+  const t = createTranslator(settings.language);
   const [ipv4, ipv6] = await Promise.all([
     detectPublicIp("A", settings)
       .then((ip) => ({ ip, error: null }))
-      .catch((error) => ({ ip: null, error: error instanceof Error ? error.message : "IPv4-Erkennung fehlgeschlagen" })),
+      .catch((error) => ({ ip: null, error: error instanceof Error ? error.message : t("ddns.ipTypeDetectionFailed", { type: "IPv4" }) })),
     detectPublicIp("AAAA", settings)
       .then((ip) => ({ ip, error: null }))
-      .catch((error) => ({ ip: null, error: error instanceof Error ? error.message : "IPv6-Erkennung fehlgeschlagen" })),
+      .catch((error) => ({ ip: null, error: error instanceof Error ? error.message : t("ddns.ipTypeDetectionFailed", { type: "IPv6" }) })),
   ]);
 
   return { ipv4, ipv6 };
@@ -70,7 +73,10 @@ async function detectPublicIpWithProvider(
   }
 
   if (!response.ok) {
-    throw new Error(`${provider}: IP-Erkennung fehlgeschlagen (${response.status})`);
+    throw new Error(createTranslator(settings.language)("ddns.providerIpDetectionFailed", {
+      provider,
+      status: response.status,
+    }));
   }
 
   const contentType = response.headers.get("content-type") || "";
@@ -80,7 +86,10 @@ async function detectPublicIpWithProvider(
   const ip = body.trim();
 
   if (!ip || !isIpForType(type, ip)) {
-    throw new Error(`${provider}: Keine gültige ${type === "A" ? "IPv4" : "IPv6"} erkannt`);
+    throw new Error(createTranslator(settings.language)("ddns.invalidIpDetected", {
+      provider,
+      type: type === "A" ? "IPv4" : "IPv6",
+    }));
   }
 
   return ip;

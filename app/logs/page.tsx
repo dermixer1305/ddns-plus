@@ -1,62 +1,68 @@
 import { AppShell } from "@/app/app-shell";
-import { formatDate } from "@/app/ui";
+import { formatDateOrNever } from "@/app/ui";
+import { createTranslator } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
+import { getSettings } from "@/lib/settings";
 
 export default async function LogsPage() {
-  const logs = await prisma.updateLog.findMany({
-    include: { record: { include: { provider: true } } },
-    orderBy: { createdAt: "desc" },
-    take: 100,
-  });
+  const [logs, settings] = await Promise.all([
+    prisma.updateLog.findMany({
+      include: { record: { include: { provider: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    }),
+    getSettings(),
+  ]);
+  const t = createTranslator(settings.language);
 
   return (
-    <AppShell active="/logs" title="Logs" eyebrow="Update Ereignisse">
+    <AppShell active="/logs" title={t("logs.title")} eyebrow={t("logs.eyebrow")}>
       <section className="panel p-5">
-        <p className="eyebrow">Logs</p>
-        <h2>Letzte Ereignisse</h2>
+        <p className="eyebrow">{t("logs.listEyebrow")}</p>
+        <h2>{t("logs.recentEvents")}</h2>
         <div className="log-list">
           {logs.length === 0 ? (
-            <p className="empty-state">Noch keine Logs vorhanden.</p>
+            <p className="empty-state">{t("logs.empty")}</p>
           ) : logs.map((log) => (
             <details className="log-row" key={log.id}>
               <summary>
                 <span className={`log-dot ${log.level.toLowerCase()}`} />
                 <span>
                   <span className="log-message">{log.message}</span>
-                  <span className="log-meta">{log.record?.hostname || "System"} · {formatDate(log.createdAt)}</span>
+                  <span className="log-meta">{log.record?.hostname || t("common.system")} · {formatDateOrNever(log.createdAt, t, settings.language)}</span>
                 </span>
               </summary>
               <dl className="log-details">
                 <div>
-                  <dt>Level</dt>
+                  <dt>{t("common.level")}</dt>
                   <dd>{log.level}</dd>
                 </div>
                 <div>
-                  <dt>Provider</dt>
+                  <dt>{t("common.provider")}</dt>
                   <dd>{log.record?.provider.name || "-"}</dd>
                 </div>
                 <div>
-                  <dt>Provider-Typ</dt>
+                  <dt>{t("logs.providerType")}</dt>
                   <dd>{log.record?.provider.type || "-"}</dd>
                 </div>
                 <div>
-                  <dt>Hostname</dt>
+                  <dt>{t("common.hostname")}</dt>
                   <dd>{log.record?.hostname || "-"}</dd>
                 </div>
                 <div>
-                  <dt>Zone</dt>
+                  <dt>{t("common.zone")}</dt>
                   <dd>{log.record?.zoneId || "-"}</dd>
                 </div>
                 <div>
-                  <dt>Record</dt>
+                  <dt>{t("common.record")}</dt>
                   <dd>{log.record ? `${log.record.recordName} (${log.record.recordType})` : "-"}</dd>
                 </div>
                 <div>
-                  <dt>IP</dt>
+                  <dt>{t("common.ip")}</dt>
                   <dd>{log.ip || "-"}</dd>
                 </div>
                 <div className="wide">
-                  <dt>Meldung</dt>
+                  <dt>{t("common.message")}</dt>
                   <dd>{log.message}</dd>
                 </div>
               </dl>

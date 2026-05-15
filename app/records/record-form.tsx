@@ -30,16 +30,35 @@ type RecordDefaults = {
   enabled?: boolean;
 };
 
+export type RecordFormTexts = {
+  save: string;
+  savedDomain: string;
+  manualZone: string;
+  zone: string;
+  zoneId: string;
+  zoneIdPlaceholder: string;
+  recordName: string;
+  recordNamePlaceholder: string;
+  type: string;
+  provider: string;
+  hostname: string;
+  createProviderFirst: string;
+  chooseProviderManual: string;
+  active: string;
+};
+
 export function RecordForm({
   providers,
   zones,
   defaults,
-  submitLabel = "Record speichern",
+  submitLabel,
+  texts,
 }: {
   providers: ProviderOption[];
   zones: ZoneOption[];
   defaults?: RecordDefaults;
   submitLabel?: string;
+  texts: RecordFormTexts;
 }) {
   const [selectedZoneRefId, setSelectedZoneRefId] = useState(defaults?.zoneRefId || "");
   const [manualProviderId, setManualProviderId] = useState(defaults?.providerId || "");
@@ -52,11 +71,11 @@ export function RecordForm({
   return (
     <form action={saveRecordAction} className="form-grid mt-5">
       {defaults?.id ? <input type="hidden" name="id" value={defaults.id} /> : null}
-      <TextInput name="hostname" label="Hostname" placeholder="home.example.com" defaultValue={defaults?.hostname} required />
+      <TextInput name="hostname" label={texts.hostname} placeholder="home.example.com" defaultValue={defaults?.hostname} required />
       <label className="field">
-        <span>Gespeicherte Domain</span>
+        <span>{texts.savedDomain}</span>
         <select name="zoneRefId" value={selectedZoneRefId} onChange={(event) => setSelectedZoneRefId(event.target.value)}>
-          <option value="">Manuelle Zone verwenden</option>
+          <option value="">{texts.manualZone}</option>
           {zones.map((zone) => (
             <option key={zone.id} value={zone.id}>{zone.name} ({zone.providerName})</option>
           ))}
@@ -64,36 +83,36 @@ export function RecordForm({
       </label>
       {selectedZone ? (
         <div className="readonly-field">
-          <span>Zone</span>
+          <span>{texts.zone}</span>
           <strong>{selectedZone.name}</strong>
           <small>{selectedZone.zoneId}</small>
         </div>
       ) : (
-        <TextInput name="zoneId" label="Zone ID oder Name" placeholder="Manuelle Zone ID oder Name" defaultValue={defaults?.zoneId} />
+        <TextInput name="zoneId" label={texts.zoneId} placeholder={texts.zoneIdPlaceholder} defaultValue={defaults?.zoneId} />
       )}
       <TextInput
         name="recordName"
-        label="Record / RRSet Name"
-        placeholder="home oder home.example.com"
+        label={texts.recordName}
+        placeholder={texts.recordNamePlaceholder}
         defaultValue={defaults?.recordName}
         required
       />
       <label className="field">
-        <span>Typ</span>
+        <span>{texts.type}</span>
         <select name="recordType" defaultValue={defaults?.recordType || "A"}>
           <option value="A">IPv4 (A)</option>
           <option value="AAAA">IPv6 (AAAA)</option>
         </select>
       </label>
       <label className="field">
-        <span>Provider</span>
+        <span>{texts.provider}</span>
         <select
           name="providerId"
           value={providerId}
           disabled={Boolean(selectedZone) || providers.length === 0}
           onChange={(event) => setManualProviderId(event.target.value)}
         >
-          <option value="">{providers.length === 0 ? "Zuerst Provider anlegen" : "Provider manuell wählen"}</option>
+          <option value="">{providers.length === 0 ? texts.createProviderFirst : texts.chooseProviderManual}</option>
           {providers.map((provider) => (
             <option key={provider.id} value={provider.id}>{provider.name} ({provider.type})</option>
           ))}
@@ -103,9 +122,9 @@ export function RecordForm({
       <TextInput name="ttl" label="TTL" type="number" defaultValue={defaults?.ttl ?? 300} />
       <label className="toggle">
         <input name="enabled" type="checkbox" defaultChecked={defaults?.enabled ?? true} />
-        <span>Aktiv</span>
+        <span>{texts.active}</span>
       </label>
-      <button className="secondary-button" type="submit" disabled={providers.length === 0}>{submitLabel}</button>
+      <button className="secondary-button" type="submit" disabled={providers.length === 0}>{submitLabel || texts.save}</button>
     </form>
   );
 }
