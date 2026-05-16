@@ -4,6 +4,8 @@ DDNS+ is a lightweight self-hosted Dynamic DNS web application built with Next.j
 
 It is designed for homelab and small self-hosted environments where DNS records should be updated automatically when the public IP address changes. Providers, domains, records, and updater settings are managed through the web UI. No `config.json` file is required.
 
+Hetzner Cloud DNS and Cloudflare DNS are tested and working. Additional providers are included through the modular provider system, but they are currently untested and should be verified before production use.
+
 ## Features
 
 - Modern dashboard with record status, provider status, public IP state, and logs
@@ -358,6 +360,8 @@ If the Cloudflare DNS record does not exist, DDNS+ creates it automatically. New
 ## Additional DNS Providers
 
 DDNS+ also supports these providers:
+
+These provider adapters are included but currently untested. Please verify them with your provider account before relying on them in production.
 
 | Provider | Token field value | Zone value | Record value |
 | --- | --- | --- | --- |
