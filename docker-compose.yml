@@ -4,7 +4,6 @@ services:
     container_name: ddns-plus
     restart: unless-stopped
     environment:
-      DATABASE_URL: file:/app/data/ddns-plus.db
       SESSION_SECRET: replace-this-with-a-long-random-secret
       PORT: "${PORT:-3000}"
     volumes:

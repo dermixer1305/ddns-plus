@@ -1,5 +1,4 @@
 import { runDdnsUpdate } from "@/lib/ddns";
-import { createTranslator } from "@/lib/i18n";
 import { getSettings } from "@/lib/settings";
 
 type SchedulerState = {
@@ -83,9 +82,7 @@ async function runScheduledUpdate() {
   try {
     await runDdnsUpdate();
   } catch (pError) {
-    const lSettings = await getSettings();
-    const lTranslate = createTranslator(lSettings.language);
-    lState.lastError = pError instanceof Error ? pError.message : lTranslate("scheduler.failed");
+    lState.lastError = pError instanceof Error ? pError.message : "Automatic check failed";
   } finally {
     lState.running = false;
     lState.lastRunFinishedAt = new Date();

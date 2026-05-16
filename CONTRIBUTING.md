@@ -12,6 +12,8 @@ npm run db:push
 npm run dev
 ```
 
+The SQLite database is stored at `data/ddns-plus.db`. No `DATABASE_URL` environment variable is required.
+
 Before opening a pull request, run:
 
 ```bash

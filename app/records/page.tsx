@@ -1,37 +1,33 @@
 import { deleteRecordAction, updateRecordAction } from "@/app/actions";
 import { AppShell } from "@/app/app-shell";
 import { formatDateOrNever, statusClass } from "@/app/ui";
-import { createTranslator } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import { RecordForm } from "@/app/records/record-form";
-import { getSettings } from "@/lib/settings";
 
 export default async function RecordsPage() {
-  const [providers, zones, records, settings] = await Promise.all([
+  const [providers, zones, records] = await Promise.all([
     prisma.dnsProvider.findMany({ orderBy: { createdAt: "asc" } }),
     prisma.dnsZone.findMany({ include: { provider: true }, orderBy: [{ name: "asc" }] }),
     prisma.ddnsRecord.findMany({
       include: { provider: true, zoneRef: true },
       orderBy: [{ enabled: "desc" }, { hostname: "asc" }],
     }),
-    getSettings(),
   ]);
-  const t = createTranslator(settings.language);
   const formTexts = {
-    save: t("records.save"),
-    savedDomain: t("records.savedDomain"),
-    manualZone: t("records.manualZone"),
-    zone: t("common.zone"),
-    zoneId: t("records.zoneId"),
-    zoneIdPlaceholder: t("records.zoneIdPlaceholder"),
-    recordName: t("records.recordName"),
-    recordNamePlaceholder: t("records.recordNamePlaceholder"),
-    type: t("common.type"),
-    provider: t("common.provider"),
-    hostname: t("common.hostname"),
-    createProviderFirst: t("records.createProviderFirst"),
-    chooseProviderManual: t("records.chooseProviderManual"),
-    active: t("records.active"),
+    save: "Save record",
+    savedDomain: "Stored domain",
+    manualZone: "Use manual zone",
+    zone: "Zone",
+    zoneId: "Zone ID or name",
+    zoneIdPlaceholder: "Manual zone ID or name",
+    recordName: "Record / RRSet name",
+    recordNamePlaceholder: "home or home.example.com",
+    type: "Type",
+    provider: "Provider",
+    hostname: "Hostname",
+    createProviderFirst: "Create a provider first",
+    chooseProviderManual: "Choose provider manually",
+    active: "Active",
   };
   const providerOptions = providers.map((provider) => ({
     id: provider.id,
@@ -47,25 +43,25 @@ export default async function RecordsPage() {
   }));
 
   return (
-    <AppShell active="/records" title={t("records.title")} eyebrow={t("records.eyebrow")}>
+    <AppShell active="/records" title="DNS Records" eyebrow="Domains & Subdomains">
       <div className="dashboard-stack">
         <section className="panel p-5">
           <div className="section-head">
             <div>
-              <p className="eyebrow">{t("records.newEyebrow")}</p>
-              <h2>{t("records.createTitle")}</h2>
+              <p className="eyebrow">New record</p>
+              <h2>Create DNS record</h2>
             </div>
           </div>
           <RecordForm providers={providerOptions} zones={zoneOptions} texts={formTexts} />
-          <p className="hint-text">{t("records.domainHint")}</p>
+          <p className="hint-text">When you select a stored domain, provider and zone ID are automatically taken from that domain.</p>
         </section>
 
       <section className="panel p-5">
-        <p className="eyebrow">{t("records.listEyebrow")}</p>
-          <h2>{t("records.existingTitle")}</h2>
+        <p className="eyebrow">Records</p>
+          <h2>Existing records</h2>
         <div className="record-list">
           {records.length === 0 ? (
-            <p className="empty-state">{t("dashboard.noRecords")}</p>
+            <p className="empty-state">No records created yet.</p>
           ) : records.map((record) => (
             <article className="record-row" key={record.id}>
               <div>
@@ -78,16 +74,16 @@ export default async function RecordsPage() {
                   {record.provider.name} · {record.zoneRef?.name || record.zoneId} · {record.recordName}
                 </p>
                 <p className="mt-1 text-sm text-zinc-500">
-                  {t("common.lastIp")}: {record.lastIp || "-"} · {t("common.check")}: {formatDateOrNever(record.lastCheckedAt, t, settings.language)}
+                  Last IP: {record.lastIp || "-"} · Check: {formatDateOrNever(record.lastCheckedAt)}
                 </p>
                 {record.lastMessage ? <p className="mt-2 text-sm text-zinc-300">{record.lastMessage}</p> : null}
                 <details className="edit-details">
-                  <summary>{t("common.edit")}</summary>
+                  <summary>Edit</summary>
                   <RecordForm
                     providers={providerOptions}
                     zones={zoneOptions}
                     texts={formTexts}
-                    submitLabel={t("records.saveChanges")}
+                    submitLabel="Save changes"
                     defaults={{
                       id: record.id,
                       hostname: record.hostname,
@@ -105,11 +101,11 @@ export default async function RecordsPage() {
               <div className="row-actions">
                 <form action={updateRecordAction}>
                   <input type="hidden" name="id" value={record.id} />
-                  <button className="ghost-button" type="submit">{t("common.update")}</button>
+                  <button className="ghost-button" type="submit">Update</button>
                 </form>
                 <form action={deleteRecordAction}>
                   <input type="hidden" name="id" value={record.id} />
-                  <button className="danger-button" type="submit">{t("common.delete")}</button>
+                  <button className="danger-button" type="submit">Delete</button>
                 </form>
               </div>
             </article>

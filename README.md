@@ -54,7 +54,6 @@ Open `http://localhost:3000` and create the first admin user.
 ## Environment Variables
 
 ```env
-DATABASE_URL="file:./dev.db"
 SESSION_SECRET="replace-this-with-a-long-random-secret"
 PORT=3000
 ```
@@ -74,17 +73,56 @@ CRON_SECRET="replace-this-if-you-use-the-cron-endpoint"
 
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
-| `DATABASE_URL` | Yes | `file:./dev.db` | Prisma database connection string. SQLite is used by default. |
 | `SESSION_SECRET` | Yes | none | Secret used for session signing. Use a long random value in production. |
 | `PORT` | No | `3000` | HTTP port used by the Next.js server. |
 | `DDNS_PLUS_SCHEDULER` | No | enabled | Set to `false` to disable the internal scheduler. |
 | `CRON_SECRET` | No | none | Optional Bearer/query secret for the `/api/cron` endpoint. |
 
-## Docker
+SQLite is built in and uses a fixed database path:
+
+```text
+data/ddns-plus.db
+```
+
+You do not need to configure a database connection string.
+
+## Installation with Docker Compose
+
+Docker Compose is the recommended deployment method for most self-hosted installations.
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/example/ddns-plus.git
+cd ddns-plus
+```
+
+2. Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+3. Edit `.env` and set a strong session secret:
+
+```env
+SESSION_SECRET="replace-this-with-a-long-random-secret"
+PORT=3000
+```
+
+4. Start DDNS+:
 
 ```bash
 docker compose up -d --build
 ```
+
+5. Open DDNS+:
+
+```text
+http://SERVER-IP:3000
+```
+
+On first access, create the initial admin user.
 
 The Compose setup starts one service:
 
@@ -92,7 +130,159 @@ The Compose setup starts one service:
 
 Docker Compose also uses `PORT` for the host and container port mapping. For example, set `PORT=8080` to serve DDNS+ on `http://localhost:8080`.
 
-Before using DDNS+ in production, replace `SESSION_SECRET` in `docker-compose.yml` with a long random value.
+Useful commands:
+
+```bash
+docker compose logs -f
+docker compose restart
+docker compose pull
+docker compose up -d --build
+```
+
+## Installation without Docker on Ubuntu
+
+This guide runs DDNS+ as a normal Node.js application managed by `systemd`.
+
+### 1. Install dependencies
+
+```bash
+sudo apt update
+sudo apt install -y git curl
+```
+
+Install Node.js 24 LTS:
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+sudo apt install -y nodejs
+```
+
+Check the installed versions:
+
+```bash
+node --version
+npm --version
+```
+
+### 2. Create a service user
+
+```bash
+sudo useradd --system --create-home --shell /usr/sbin/nologin ddns-plus
+```
+
+### 3. Install DDNS+
+
+```bash
+sudo mkdir -p /opt/ddns-plus
+sudo chown ddns-plus:ddns-plus /opt/ddns-plus
+sudo -u ddns-plus git clone https://github.com/example/ddns-plus.git /opt/ddns-plus
+cd /opt/ddns-plus
+```
+
+Install dependencies and build the app:
+
+```bash
+sudo -u ddns-plus npm ci
+sudo -u ddns-plus cp .env.example .env
+sudo -u ddns-plus nano .env
+```
+
+Set at least:
+
+```env
+SESSION_SECRET="replace-this-with-a-long-random-secret"
+PORT=3000
+```
+
+Prepare the database and build:
+
+```bash
+sudo -u ddns-plus npm run prisma:generate
+sudo -u ddns-plus npm run db:push
+sudo -u ddns-plus npm run build
+```
+
+The SQLite database is stored here:
+
+```text
+/opt/ddns-plus/data/ddns-plus.db
+```
+
+### 4. Create the systemd service
+
+Create `/etc/systemd/system/ddns-plus.service`:
+
+```bash
+sudo nano /etc/systemd/system/ddns-plus.service
+```
+
+Paste:
+
+```ini
+[Unit]
+Description=DDNS+
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ddns-plus
+Group=ddns-plus
+WorkingDirectory=/opt/ddns-plus
+Environment=NODE_ENV=production
+EnvironmentFile=/opt/ddns-plus/.env
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start DDNS+:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now ddns-plus
+```
+
+Check status and logs:
+
+```bash
+sudo systemctl status ddns-plus
+sudo journalctl -u ddns-plus -f
+```
+
+Open:
+
+```text
+http://SERVER-IP:3000
+```
+
+### 5. Updating without Docker
+
+```bash
+cd /opt/ddns-plus
+sudo systemctl stop ddns-plus
+sudo -u ddns-plus git pull
+sudo -u ddns-plus npm ci
+sudo -u ddns-plus npm run prisma:generate
+sudo -u ddns-plus npm run db:push
+sudo -u ddns-plus npm run build
+sudo systemctl start ddns-plus
+```
+
+### 6. Reverse proxy and HTTPS
+
+For public access, run DDNS+ behind a reverse proxy with HTTPS, such as Caddy, Nginx, or Traefik.
+
+Example Caddy config:
+
+```caddyfile
+ddns.example.com {
+  reverse_proxy 127.0.0.1:3000
+}
+```
 
 ## Automatic Updates
 

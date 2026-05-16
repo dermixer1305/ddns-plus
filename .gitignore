@@ -35,6 +35,8 @@ yarn-error.log*
 .env*
 /dev.db
 /dev.db-journal
+data/*.db
+data/*.db-journal
 prisma/*.db
 prisma/*.db-journal
 

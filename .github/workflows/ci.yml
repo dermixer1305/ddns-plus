@@ -16,7 +16,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DATABASE_URL: file:./dev.db
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       SESSION_SECRET: ci-session-secret-replace-in-production
       NEXT_TELEMETRY_DISABLED: 1

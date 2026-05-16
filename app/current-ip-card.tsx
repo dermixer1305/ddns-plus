@@ -87,7 +87,7 @@ function IpCard({
   const checkedAtText = checkedAt
     ? texts.lastCheck.replace(
       "{date}",
-      new Date(checkedAt).toLocaleString(texts.locale === "en" ? "en-US" : "de-DE"),
+      new Date(checkedAt).toLocaleString("en-US"),
     )
     : null;
 

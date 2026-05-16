@@ -61,11 +61,11 @@ export const hetznerCloudProvider: DnsProviderAdapter = {
   displayName: "Hetzner Cloud DNS",
   defaultName: "Hetzner Cloud DNS",
   tokenLabel: "Cloud API Token",
-  tokenPlaceholder: "Bearer Token aus der Hetzner Console",
-  zoneLabel: "Zone ID oder Name",
-  zonePlaceholder: "example.com oder 123456",
+  tokenPlaceholder: "Bearer token from the Hetzner Console",
+  zoneLabel: "Zone ID or name",
+  zonePlaceholder: "example.com or 123456",
   recordLabel: "RRSet Name",
-  recordPlaceholder: "home oder @",
+  recordPlaceholder: "home or @",
   async updateRecord({ record, ip, settings }) {
     const rrsetPath =
       `/zones/${encodePathPart(record.zoneId)}/rrsets/${encodePathPart(record.recordName)}/${record.recordType}`;
@@ -89,14 +89,14 @@ export const hetznerCloudProvider: DnsProviderAdapter = {
         }),
       });
 
-      return { changed: true, message: `RRSet erstellt: ${ip}` };
+      return { changed: true, message: `RRSet created: ${ip}` };
     }
 
     const currentValues = rrset.records.map((item) => item.value);
     const ttlNeedsUpdate = typeof rrset.ttl === "number" && rrset.ttl !== record.ttl;
 
     if (currentValues.length === 1 && currentValues[0] === ip && !ttlNeedsUpdate) {
-      return { changed: false, message: "IP ist bereits aktuell", previousValues: currentValues };
+      return { changed: false, message: "IP is already current", previousValues: currentValues };
     }
 
     await hetznerRequest(record.provider.apiToken, `${rrsetPath}/actions/set_records`, settings, {
@@ -113,7 +113,7 @@ export const hetznerCloudProvider: DnsProviderAdapter = {
 
     return {
       changed: true,
-      message: `RRSet aktualisiert: ${currentValues.join(", ") || "-"} -> ${ip}`,
+      message: `RRSet updated: ${currentValues.join(", ") || "-"} -> ${ip}`,
       previousValues: currentValues,
     };
   },

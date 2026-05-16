@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:../data/ddns-plus.db"
 }
 
 model User {
@@ -74,7 +74,6 @@ model UpdateLog {
 
 model AppSettings {
   id                  String   @id @default("default")
-  language            String   @default("de")
   updatePeriodSeconds Int      @default(300)
   cooldownSeconds     Int      @default(300)
   httpTimeoutSeconds  Int      @default(10)

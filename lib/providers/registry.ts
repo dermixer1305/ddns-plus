@@ -24,7 +24,7 @@ const providers = [
 
 export function getProviderAdapter(type: ProviderType) {
   const provider = providers.find((item) => item.type === type);
-  if (!provider) throw new Error(`Provider ${type} ist nicht registriert`);
+  if (!provider) throw new Error(`Provider ${type} is not registered`);
   return provider;
 }
 

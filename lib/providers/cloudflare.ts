@@ -104,7 +104,7 @@ export const cloudflareProvider: DnsProviderAdapter = {
   displayName: "Cloudflare DNS",
   defaultName: "Cloudflare DNS",
   tokenLabel: "Cloudflare API Token",
-  tokenPlaceholder: "API Token mit Zone DNS Read/Edit",
+  tokenPlaceholder: "API token with Zone DNS Read/Edit",
   zoneLabel: "Zone ID",
   zonePlaceholder: "Cloudflare Zone ID",
   recordLabel: "DNS Record Name",
@@ -139,12 +139,12 @@ export const cloudflareProvider: DnsProviderAdapter = {
         },
       );
 
-      return { changed: true, message: `DNS Record erstellt: ${ip}` };
+      return { changed: true, message: `DNS record created: ${ip}` };
     }
 
     const ttlNeedsUpdate = existingRecord.ttl !== record.ttl;
     if (existingRecord.content === ip && !ttlNeedsUpdate) {
-      return { changed: false, message: "IP ist bereits aktuell", previousValues: [existingRecord.content] };
+      return { changed: false, message: "IP is already current", previousValues: [existingRecord.content] };
     }
 
     await cloudflareRequest<CloudflareDnsRecord>(
@@ -164,7 +164,7 @@ export const cloudflareProvider: DnsProviderAdapter = {
 
     return {
       changed: true,
-      message: `DNS Record ${existingRecord.name} aktualisiert: ${existingRecord.content} -> ${ip}`,
+      message: `DNS record ${existingRecord.name} updated: ${existingRecord.content} -> ${ip}`,
       previousValues: [existingRecord.content],
     };
   },

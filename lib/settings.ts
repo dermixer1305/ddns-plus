@@ -2,7 +2,6 @@ import { IpProvider } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export type RuntimeSettings = {
-  language: string;
   updatePeriodSeconds: number;
   cooldownSeconds: number;
   httpTimeoutSeconds: number;
@@ -21,7 +20,6 @@ export type RuntimeSettings = {
 };
 
 export const defaultSettings: RuntimeSettings = {
-  language: "de",
   updatePeriodSeconds: 300,
   cooldownSeconds: 300,
   httpTimeoutSeconds: 10,

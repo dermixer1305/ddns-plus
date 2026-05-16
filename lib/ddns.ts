@@ -4,14 +4,11 @@ import { detectPublicIp } from "@/lib/public-ip";
 import { getProviderAdapter } from "@/lib/providers/registry";
 import { DdnsRecordWithProvider } from "@/lib/providers/types";
 import { getSettings, RuntimeSettings } from "@/lib/settings";
-import { createTranslator } from "@/lib/i18n";
 
 export async function updateDdnsRecord(record: DdnsRecordWithProvider, settings: RuntimeSettings, force = false) {
-  const t = createTranslator(settings.language);
-
   if (!record.enabled) {
-    await writeResult(record.id, "SKIPPED", "INFO", t("ddns.disabled"));
-    return { status: "SKIPPED" as const, message: t("ddns.disabled") };
+    await writeResult(record.id, "SKIPPED", "INFO", "Record is disabled");
+    return { status: "SKIPPED" as const, message: "Record is disabled" };
   }
 
   if (!force && record.lastCheckedAt) {
@@ -19,8 +16,8 @@ export async function updateDdnsRecord(record: DdnsRecordWithProvider, settings:
     const nextAllowedAt = record.lastCheckedAt.getTime() + waitPeriodSeconds * 1000;
     if (nextAllowedAt > Date.now()) {
       const waitSeconds = Math.ceil((nextAllowedAt - Date.now()) / 1000);
-      await writeSkipResult(record.id, t("ddns.cooldownNext", { seconds: waitSeconds }));
-      return { status: "SKIPPED" as const, message: t("ddns.cooldown") };
+      await writeSkipResult(record.id, `Cooldown active, next check in ${waitSeconds}s`);
+      return { status: "SKIPPED" as const, message: "Cooldown active" };
     }
   }
 
@@ -37,7 +34,7 @@ export async function updateDdnsRecord(record: DdnsRecordWithProvider, settings:
     await writeResult(record.id, "CHANGED", "INFO", result.message, ip, true);
     return { status: "CHANGED" as const, message: result.message, ip };
   } catch (error) {
-    const message = error instanceof Error ? error.message : t("ddns.unknownError");
+    const message = error instanceof Error ? error.message : "Unknown error";
     const contextMessage =
       `${record.provider.type} ${record.hostname} ${record.recordType} ` +
       `(zone=${record.zoneId}, record=${record.recordName}): ${message}`;
@@ -66,10 +63,10 @@ export async function runDdnsUpdate(recordId?: string, force = false) {
       });
     }
 
-    await markUpdateFinished("OK", createTranslator(settings.language)("ddns.recordsChecked", { count: results.length }));
+    await markUpdateFinished("OK", `${results.length} records checked`);
     return results;
   } catch (error) {
-    const message = error instanceof Error ? error.message : createTranslator(settings.language)("ddns.updateFailed");
+    const message = error instanceof Error ? error.message : "Update failed";
     await markUpdateFinished("ERROR", message);
     throw error;
   }
@@ -113,7 +110,7 @@ async function refreshPublicIp(recordType: RecordType, settings: RuntimeSettings
         : { lastPublicIpv6: ip, lastPublicIpv6Error: null, lastPublicIpv6At: new Date() },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : createTranslator(settings.language)("ddns.ipDetectionFailed");
+    const message = error instanceof Error ? error.message : "IP detection failed";
     await prisma.appSettings.update({
       where: { id: "default" },
       data: recordType === "A"
@@ -129,9 +126,7 @@ async function getPublicIpForRecord(recordType: RecordType) {
   const error = recordType === "A" ? latestSettings.lastPublicIpv4Error : latestSettings.lastPublicIpv6Error;
 
   if (ip) return ip;
-  throw new Error(error || createTranslator(latestSettings.language)("ddns.ipNotDetected", {
-    type: recordType === "A" ? "IPv4" : "IPv6",
-  }));
+  throw new Error(error || `${recordType === "A" ? "IPv4" : "IPv6"} has not been detected yet`);
 }
 
 async function writeResult(

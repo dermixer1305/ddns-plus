@@ -7,8 +7,8 @@ export function timeoutSignal(seconds: number) {
 export function describeFetchError(error: unknown, target: string) {
   if (error instanceof Error) {
     const cause = error.cause instanceof Error ? `: ${error.cause.message}` : "";
-    return `${target} nicht erreichbar (${error.message}${cause})`;
+    return `${target} is not reachable (${error.message}${cause})`;
   }
 
-  return `${target} nicht erreichbar`;
+  return `${target} is not reachable`;
 }

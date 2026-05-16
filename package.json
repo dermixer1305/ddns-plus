@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run db:push && next build",
     "start": "next start",
     "lint": "eslint",
+    "ensure:data": "node scripts/ensure-data-dir.mjs",
     "prisma:generate": "prisma generate",
-    "db:push": "prisma db push",
+    "db:push": "npm run ensure:data && prisma db push --skip-generate --accept-data-loss",
     "password:reset": "node scripts/reset-password.mjs"
   },
   "dependencies": {

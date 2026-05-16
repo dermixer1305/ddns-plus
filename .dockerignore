@@ -9,5 +9,6 @@ yarn-error.log*
 .pnpm-debug.log*
 /dev.db
 /dev.db-journal
+/data
 /prisma/*.db
 /prisma/*.db-journal
