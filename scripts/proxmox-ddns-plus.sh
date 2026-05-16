@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 lApp="DDNS+"
 lRepoUrl="${DDNS_PLUS_REPO:-https://github.com/dermixer1305/ddns-plus.git}"
-lBranch="${DDNS_PLUS_BRANCH:-main}"
+lBranch="${DDNS_PLUS_BRANCH:-master}"
 lRawBase="${DDNS_PLUS_RAW_BASE:-https://raw.githubusercontent.com/dermixer1305/ddns-plus/${lBranch}}"
 lInstallScriptUrl="${lRawBase}/scripts/proxmox-install-ddns-plus.sh"
 
