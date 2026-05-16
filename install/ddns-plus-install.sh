@@ -28,7 +28,6 @@ msg_ok "Installed Dependencies"
 lSessionSecret="$(openssl rand -hex 32)"
 
 NODE_VERSION="24"
-NODE_MODULE="npm"
 setup_nodejs
 
 msg_info "Creating Service User"
