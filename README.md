@@ -141,6 +141,43 @@ docker compose pull
 docker compose up -d --build
 ```
 
+## Proxmox LXC One-Line Installation
+
+Run this command in the Proxmox VE host shell as `root`:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/dermixer1305/ddns-plus/main/scripts/proxmox-ddns-plus.sh)"
+```
+
+The installer creates a new Debian LXC container, installs DDNS+ directly inside the container, configures SQLite, builds the app, creates a `ddns-plus.service` systemd unit, and starts it automatically.
+
+This installation method does not use Docker.
+
+During installation, the script asks for:
+
+- Container ID
+- Hostname
+- CPU cores, memory, and disk size
+- Network bridge
+- DDNS+ port
+- Proxmox storage targets
+- Whether a random `SESSION_SECRET` should be generated
+
+After the script completes, DDNS+ is available at:
+
+```text
+http://CONTAINER-IP:3000
+```
+
+Useful commands:
+
+```bash
+pct enter CONTAINER-ID
+pct exec CONTAINER-ID -- systemctl status ddns-plus
+pct exec CONTAINER-ID -- journalctl -u ddns-plus -f
+pct exec CONTAINER-ID -- systemctl restart ddns-plus
+```
+
 ## Installation without Docker on Ubuntu
 
 This guide runs DDNS+ as a normal Node.js application managed by `systemd`.
