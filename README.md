@@ -146,10 +146,10 @@ docker compose up -d --build
 Run this command in the Proxmox VE host shell as `root`:
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/dermixer1305/ddns-plus/master/scripts/proxmox-ddns-plus.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/dermixer1305/ddns-plus/master/ct/ddns-plus.sh)"
 ```
 
-The installer creates a new Debian LXC container, installs DDNS+ directly inside the container, configures SQLite, builds the app, creates a `ddns-plus.service` systemd unit, and starts it automatically.
+The installer uses the Proxmox VE Community Scripts helper UI, creates a new Debian LXC container, installs DDNS+ directly inside the container, configures SQLite, builds the app, creates a `ddns-plus.service` systemd unit, and starts it automatically.
 
 This installation method does not use Docker.
 
