@@ -178,6 +178,14 @@ pct exec CONTAINER-ID -- journalctl -u ddns-plus -f
 pct exec CONTAINER-ID -- systemctl restart ddns-plus
 ```
 
+Update DDNS+ from inside the LXC container:
+
+```bash
+update
+```
+
+The installer also creates the explicit command `ddns-plus-update`. Both commands pull the latest code, install dependencies, update Prisma/SQLite, rebuild DDNS+, and restart the `ddns-plus` service.
+
 ## Installation without Docker on Ubuntu
 
 This guide runs DDNS+ as a normal Node.js application managed by `systemd`.

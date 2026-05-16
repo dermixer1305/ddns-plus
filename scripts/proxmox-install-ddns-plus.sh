@@ -98,6 +98,54 @@ RestartSec=10
 WantedBy=multi-user.target
 EOF
 
+l_log "Creating update command"
+cat >/usr/local/bin/ddns-plus-update <<EOF
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+lInstallDir="${lInstallDir}"
+lServiceUser="${lServiceUser}"
+
+function l_log() {
+  echo "[DDNS+] \$*"
+}
+
+if [[ "\$(id -u)" -ne 0 ]]; then
+  echo "[DDNS+] ERROR: Run this command as root inside the DDNS+ LXC container." >&2
+  exit 1
+fi
+
+l_log "Stopping service"
+systemctl stop ddns-plus || true
+
+function l_restart_service() {
+  systemctl start ddns-plus || true
+}
+
+trap l_restart_service EXIT
+
+l_log "Pulling latest code"
+sudo -u "\${lServiceUser}" git -C "\${lInstallDir}" pull --ff-only
+
+l_log "Installing dependencies"
+sudo -u "\${lServiceUser}" npm --prefix "\${lInstallDir}" ci
+
+l_log "Updating Prisma client and database"
+sudo -u "\${lServiceUser}" npm --prefix "\${lInstallDir}" run prisma:generate
+sudo -u "\${lServiceUser}" npm --prefix "\${lInstallDir}" run db:push
+
+l_log "Building application"
+sudo -u "\${lServiceUser}" npm --prefix "\${lInstallDir}" run build
+
+l_log "Restarting service"
+systemctl restart ddns-plus
+trap - EXIT
+
+l_log "Update completed"
+EOF
+chmod 755 /usr/local/bin/ddns-plus-update
+ln -sf /usr/local/bin/ddns-plus-update /usr/local/bin/update
+
 systemctl daemon-reload
 systemctl enable --now ddns-plus
 
