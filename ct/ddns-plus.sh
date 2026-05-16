@@ -6,6 +6,7 @@ source <(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxV
 # Source: https://github.com/dermixer1305/ddns-plus
 
 APP="DDNS+"
+var_hostname="${var_hostname:-ddns-plus}"
 var_tags="${var_tags:-dns;ddns}"
 var_cpu="${var_cpu:-2}"
 var_ram="${var_ram:-2048}"
