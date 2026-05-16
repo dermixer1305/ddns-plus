@@ -58,6 +58,7 @@ Open `http://localhost:3000` and create the first admin user.
 ```env
 SESSION_SECRET="replace-this-with-a-long-random-secret"
 PORT=3000
+SESSION_COOKIE_SECURE="false"
 ```
 
 Optional:
@@ -77,6 +78,7 @@ CRON_SECRET="replace-this-if-you-use-the-cron-endpoint"
 | --- | --- | --- | --- |
 | `SESSION_SECRET` | Yes | none | Secret used for session signing. Use a long random value in production. |
 | `PORT` | No | `3000` | HTTP port used by the Next.js server. |
+| `SESSION_COOKIE_SECURE` | No | `false` | Set to `true` only when DDNS+ is served over HTTPS. |
 | `DDNS_PLUS_SCHEDULER` | No | enabled | Set to `false` to disable the internal scheduler. |
 | `CRON_SECRET` | No | none | Optional Bearer/query secret for the `/api/cron` endpoint. |
 

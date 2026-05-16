@@ -44,6 +44,7 @@ sudo -u "${lServiceUser}" git clone --branch "${lBranch}" "${lRepoUrl}" "${lInst
 cat >"${lInstallDir}/.env" <<EOF
 SESSION_SECRET="${lSessionSecret}"
 PORT=${lPort}
+SESSION_COOKIE_SECURE="false"
 EOF
 chown "${lServiceUser}:${lServiceUser}" "${lInstallDir}/.env"
 chmod 600 "${lInstallDir}/.env"
